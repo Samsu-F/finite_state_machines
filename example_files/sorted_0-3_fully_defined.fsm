@@ -1,0 +1,5 @@
++s0: 0 -> s0; 1 -> s1; 2 -> s2; 3 -> s3
++s1: 0 -> not_sorted; 1 -> s1; 2 -> s2; 3 -> s3
++s2: 0,1 -> not_sorted; 2 -> s2; 3 -> s3
++s3: 0,1,2 -> not_sorted; 3 -> s3
+-not_sorted: 0,1,2,3 -> not_sorted
