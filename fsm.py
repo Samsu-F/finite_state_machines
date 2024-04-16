@@ -71,7 +71,7 @@ class Fsm:
             if mark_current_state and state == self.current_state:
                 attributes += ", color=red"
             result += f"\t{state} [{attributes}]\n"
-        result += f"\t_dummy_for_initial_state_ [shape=point, width=0, style=invisible] // A dummy node used to for the initial state arrow\n"
+        result += f"\t_dummy_for_initial_state_ [shape=point, width=0, style=invis] // A dummy node used to for the initial state arrow\n"
         result += f"\t_dummy_for_initial_state_ -> {self.initial_state}\n"
         for state in self.states:
             if state == UNDEFINED:
@@ -84,7 +84,7 @@ class Fsm:
 
     def display(self, mark_current_state=False, name="fsm", format="png", suppress_error=True):
         graph = Source(self.to_dot(name=name, mark_current_state=mark_current_state))
-        graph.render(view=True, filename=f"/tmp/{name}.gv", format=format, quiet_view=suppress_error, renderer="cairo")
+        graph.render(view=True, filename=f"/tmp/{name}.gv", format=format, quiet_view=suppress_error)
 
 
 
