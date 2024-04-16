@@ -1,4 +1,4 @@
-# finite state machines
+# Finite State Machines
 Display and run (deterministic) finite state machines, aka finite automata.
 
 
@@ -6,7 +6,7 @@ Display and run (deterministic) finite state machines, aka finite automata.
 
 Simply download [fsm.py](fsm.py) and install the graphviz python package.
 
-You can also clone this repository to get the [example_files/](example files) as well.
+You can also clone this repository to get the [example files](example_files/) as well.
 
 ## Usage
 ```
