@@ -6,6 +6,12 @@ from graphviz import Source
 
 
 UNDEFINED = "_undefined_"
+ARGPARSE_EPILOG = """
+Author & License
+  Written by Samsu-F, 2024.
+  github.com/Samsu-F
+  This software is distributed under the GNU General Public License v3.0.
+""" # TODO: add explanation for fsm file syntax
 
 
 
@@ -17,11 +23,13 @@ class Fsm:
         with open(fsmfilename, "r") as file:
             lines = file.read().splitlines()
             for line in lines:
+                line = line.split("//")[0]  # remove comments
+                line = ''.join(c for c in line if c not in " \t")   # remove tabs and spaces
                 if line == '':
                     continue    # skip empty lines
                 assert line[0] in ("+", "-")
                 accepting = (line[0] == "+")
-                line = ''.join(c for c in line[1:] if c not in " \t")   # remove first char, remove tabs and spaces
+                line = line[1:] # remove first char
                 split = line.split(":")
                 assert len(split) == 2
                 state_name, transitions = split
@@ -95,7 +103,7 @@ def parse_args() -> argparse.ArgumentParser:
                     # usage='%(prog)s [options] fsmfile',
                     description='A Finite State Machine Interpreter',
                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                    epilog="Author & License\n  Written by Samsu-F, 2024.\n  github.com/Samsu-F\n  This software is distributed under the GNU General Public License v3.0."
+                    epilog=ARGPARSE_EPILOG
                     )
     argparser.add_argument('fsmfile', type=str,
                                 help="""The file containing the finite state machine to simulate""")  # mandatory positional argument
