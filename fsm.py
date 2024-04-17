@@ -60,7 +60,7 @@ class Fsm:
 
 
     def to_dot(self, name="FiniteStateMachine", mark_current_state=False):
-        result = "digraph " + name + "{\n"
+        result = f"digraph \"{name}\" {{\n"
         for state in self.states:
             if state == UNDEFINED and not (self.current_state == UNDEFINED and mark_current_state):
                 continue
@@ -77,12 +77,12 @@ class Fsm:
             if state == UNDEFINED:
                 continue
             for char, next_state in self.states[state].items():
-                result += f"\t{state} -> {next_state} [label={char}]\n"
+                result += f"\t{state} -> {next_state} [label=\"{char}\"]\n"
         result += "}"
         return result
 
 
-    def display(self, mark_current_state=False, name="fsm", format="png", suppress_error=True):
+    def display(self, mark_current_state=False, name="FiniteStateMachine", format="png", suppress_error=True):
         graph = Source(self.to_dot(name=name, mark_current_state=mark_current_state))
         graph.render(view=True, filename=f"/tmp/{name}.gv", format=format, quiet_view=suppress_error)
 
