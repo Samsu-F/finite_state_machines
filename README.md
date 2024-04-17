@@ -24,7 +24,9 @@ Each line defines a state with all transitions starting from it. For example,
 +foo: a -> bar; b,c -> baz; d -> foo
 ```
 defines the accepting (+) state called `foo`, which has a transition to the state `bar` on character "a", transitions to `baz` on "b" or "c", and one to itself on "d".
-Lines must start with either '+' (accepting) or '-' (rejecting).
-The first line defines the initial state.
-The non-accepting state `_undefined_` is implicitly defined if any transition is undefined. Every transition from `_undefined_` leads back to itself.
-Invalid characters for state names and input characters are tabs, spaces, `+`, `-`, `>`, `;`, `:`, `;` and `,`.
+- Lines must start with either '+' (accepting) or '-' (rejecting).
+- The first line defines the initial state.
+- The rejecting state `_undefined_` is implicitly defined if any transition is undefined. Every transition from `_undefined_` leads back to itself.
+- Invalid characters for state names and input characters are tabs, spaces, `+`, `-`, `>`, `;`, `:`, `;` and `,`.
+- Comments start with `//`. Everything after `//` until the end of the line is ignored.
+- Tabs and spaces are ignored.
