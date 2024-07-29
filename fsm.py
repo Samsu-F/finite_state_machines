@@ -72,6 +72,89 @@ class Fsm:
         self.current_state = self.initial_state
 
 
+
+    # transform self into the equivalent minimal DFA 
+    def minimize(self):
+        marked = True    # constants to make the code more readable
+        unmarked = False
+
+        # remove unreachable states
+        visited = set()
+        queue = set([self.initial_state])
+        while len(queue) > 0:
+            s = queue.pop()
+            visited.add(s)
+            for t in self.states[s].values():
+                if t not in visited:
+                    queue.add(t)
+        state_list = list(visited)
+        equiv_table = {}
+        # initialize
+        for i_s, s in enumerate(state_list):
+            equiv_table[s] = {}
+            for t in state_list[i_s+1:]:
+                if self.state_accepting[s] != self.state_accepting[t]:
+                    equiv_table[s][t] = marked
+                else:
+                    equiv_table[s][t] = unmarked
+
+        changed = -1
+        loop = 0    # debugging
+        while changed != 0:
+            print(f"{loop=}, {changed=}", file=sys.stderr)
+            loop += 1
+            changed = 0
+            for i_s, s in enumerate(state_list):
+                for t in state_list[i_s+1:]:
+                    if equiv_table[s][t] == marked:
+                        continue
+                    transition_chars = set(self.states[s]).union(set(self.states[t]))
+                    for c in transition_chars:
+                        try:
+                            q = self.states[s][c]
+                            r = self.states[t][c]
+                        except:
+                            sys.exit(f"Error: Minimization is not supported for partially defined transition functions.\nOnly one of the states {s} and {t} has a transition for character '{c}'.\nYou may need the --alphabet option if wildcards are used in the definition.")
+                        if q == r:
+                            continue
+                        if state_list.index(q) > state_list.index(r):
+                            q, r = r, q
+                        if equiv_table[q][r] == marked:
+                            equiv_table[s][t] = marked
+                            changed += 1
+                            break
+        print("finished minimization main loop", file=sys.stderr)
+
+        # build new automaton
+        replaced = {}   # (replaced[x] == y) means x was replaced by y
+        for i_s, s in enumerate(state_list):
+            for t in state_list[i_s+1:]:
+                if equiv_table[s][t] == unmarked:
+                    # s and t are equivalent
+                    while s in replaced:
+                        s = replaced[s]
+                    assert t != s
+                    replaced[t] = s
+
+        new_states = {}
+        new_accepting = {}
+        for s in state_list:
+            if s not in replaced:
+                replaced[s] = s
+                new_states[s] = {}
+                new_accepting[s] = self.state_accepting[s]
+        for s in state_list:
+            assert replaced[s] in new_states
+            for c in self.states[s]:
+                new_states[replaced[s]][c] = replaced[self.states[s][c]]
+
+        self.states = new_states
+        self.state_accepting = new_accepting
+        self.initial_state = replaced[self.initial_state]
+        print(f"finished minimization, minimal automaton has {len(new_states)} states.", file=sys.stderr)
+
+
+
     def single_transition(self, input_char):
         assert len(input_char) == 1
         transitions = self.states[self.current_state]
@@ -141,6 +224,8 @@ def parse_args() -> argparse.ArgumentParser:
                                 help="Display the initial state of the fsm.")
     argparser.add_argument('-D', '--display_final', required=False, dest='display_final', default=False, action='store_true',
                                 help="Display the final state of the fsm, final state will be marked in red.")
+    argparser.add_argument('-m', '--minimize', required=False, dest='minimize', default=False, action='store_true',
+                                help="Minimize the fsm before anything else. This option is only supported for fully defined automata. If wildcards are used, the --alphabet option is mandatory.")
     argparser.add_argument('-a', '--alphabet', required=False, type=str, default=None,
                                 help="""Define the alphabet, i.e. the meaning of the wildcard as a comma-separated list.
                                         For example, -a 'a, b, c'.""")
@@ -159,8 +244,12 @@ def main():
     args = parse_args()
     if args.alphabet is not None:
         args.alphabet = set(args.alphabet.split(','))
-    print(f"{args.alphabet=}")
+
     fsm = Fsm(args.fsmfile, alphabet=args.alphabet)
+
+    if args.minimize:
+        fsm.minimize()
+
     filename = os.path.basename(args.fsmfile)
     fsmname = filename.rsplit(".fsm", 1)[0]     # remove suffix ".fsm" if it exists
 
