@@ -200,6 +200,21 @@ class Fsm:
         return result
 
 
+    def to_fsm_syntax(self):
+        result = ""
+        states = [self.initial_state] + [s for s in self.states if s != self.initial_state] # put initial state at the beginning
+        for s in states:
+            acc = ['-','+'][self.state_accepting[s]]
+            transitions = ""
+            for c in self.states[s]:
+                if c == WILDCARD:
+                    transitions += f" {WILDCARD_NOTATION} -> {self.states[s][c]};"
+                else:
+                    transitions += f" {c} -> {self.states[s][c]};"
+            result += f"{acc}{s}:{transitions}\n"
+        return result
+
+
     def display(self, mark_current_state=False, name="FiniteStateMachine", format="png", suppress_error=True):
         graph = Source(self.to_dot(name=name, mark_current_state=mark_current_state))
         graph.render(view=True, filename=f"/tmp/{name}.gv", format=format, quiet_view=suppress_error)
@@ -217,24 +232,26 @@ def parse_args() -> argparse.ArgumentParser:
                     )
     argparser.add_argument('fsmfile', type=str,
                                 help="""The file containing the finite state machine to simulate""")  # mandatory positional argument
-    argparser.add_argument('-i', '--inputstring', required=False, type=str, default=None,
-                                help="""The string that serves as an input for the finite state machine.
-                                        Run the finite state machine on this string and print whether it accepts or rejects it.""")
+    argparser.add_argument('-a', '--alphabet', required=False, type=str, default=None,
+                                help="""Define the alphabet, i.e. the meaning of the wildcard as a comma-separated list.
+                                        For example, -a 'a, b, c'.""")
     argparser.add_argument('-d', '--display_initial', required=False, dest='display_initial', default=False, action='store_true',
                                 help="Display the initial state of the fsm.")
     argparser.add_argument('-D', '--display_final', required=False, dest='display_final', default=False, action='store_true',
                                 help="Display the final state of the fsm, final state will be marked in red.")
+    argparser.add_argument('-i', '--inputstring', required=False, type=str, default=None,
+                                help="""The string that serves as an input for the finite state machine.
+                                        Run the finite state machine on this string and print whether it accepts or rejects it.""")
     argparser.add_argument('-m', '--minimize', required=False, dest='minimize', default=False, action='store_true',
                                 help="Minimize the fsm before anything else. This option is only supported for fully defined automata. If wildcards are used, the --alphabet option is mandatory.")
-    argparser.add_argument('-a', '--alphabet', required=False, type=str, default=None,
-                                help="""Define the alphabet, i.e. the meaning of the wildcard as a comma-separated list.
-                                        For example, -a 'a, b, c'.""")
+    argparser.add_argument('-p', '--print', required=False, dest='print', default=False, action='store_true',
+                                help="Print the fsm definition of the resulting automaton at the end. This is especially useful if you want to save the result of the minimization or if you want to replace wildcards using the --alphabet option.")
 
     args = argparser.parse_args()
     if args.display_final and args.inputstring is None:
         argparser.error('-i/--inputstring is mandatory when -D/--display_initial is used')
-    if not args.display_initial and not args.display_final and args.inputstring is None:
-        argparser.error('At least one of the options -i, -d or -D has to be used. Use option -h for help.')
+    if not args.display_initial and not args.display_final and not args.print and args.inputstring is None:
+        argparser.error('At least one of the options -d, -D, -i or -p has to be used. Use option -h for help.')
     return args
 
 
@@ -267,6 +284,9 @@ def main():
 
     if args.display_final:
         fsm.display(mark_current_state=True, name=f"{fsmname}_final")
+
+    if args.print:
+        print(fsm.to_fsm_syntax(), end="")
 
 
 
