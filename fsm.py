@@ -215,8 +215,8 @@ class Fsm:
         return result
 
 
-    def display(self, mark_current_state=False, name="FiniteStateMachine", format="png", suppress_error=True):
-        graph = Source(self.to_dot(name=name, mark_current_state=mark_current_state))
+    def display(self, mark_current_state=False, name="FiniteStateMachine", format="png", suppress_error=True, engine=None):
+        graph = Source(self.to_dot(name=name, mark_current_state=mark_current_state), engine=engine)
         graph.render(view=True, filename=f"/tmp/{name}.gv", format=format, quiet_view=suppress_error)
 
 
@@ -239,6 +239,8 @@ def parse_args() -> argparse.ArgumentParser:
                                 help="Display the initial state of the fsm.")
     argparser.add_argument('-D', '--display_final', required=False, dest='display_final', default=False, action='store_true',
                                 help="Display the final state of the fsm, final state will be marked in red.")
+    argparser.add_argument('-e', '--engine', required=False, type=str, default=None,
+                                help="""Specify the layout engine used for displaying the fsm. The default layout engine is dot.""")
     argparser.add_argument('-i', '--inputstring', required=False, type=str, default=None,
                                 help="""The string that serves as an input for the finite state machine.
                                         Run the finite state machine on this string and print whether it accepts or rejects it.""")
@@ -271,7 +273,7 @@ def main():
     fsmname = filename.rsplit(".fsm", 1)[0]     # remove suffix ".fsm" if it exists
 
     if args.display_initial:
-        fsm.display(name=f"{fsmname}_initial")
+        fsm.display(name=f"{fsmname}_initial", engine=args.engine)
 
     # print(fsm.to_dot(name=fsmname, mark_current_state=True))
     if args.inputstring is not None:
@@ -283,7 +285,7 @@ def main():
             print(f"The input string \"{args.inputstring}\" is rejected.")
 
     if args.display_final:
-        fsm.display(mark_current_state=True, name=f"{fsmname}_final")
+        fsm.display(mark_current_state=True, name=f"{fsmname}_final", engine=args.engine)
 
     if args.print:
         print(fsm.to_fsm_syntax(), end="")

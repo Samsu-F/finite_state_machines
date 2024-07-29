@@ -1,5 +1,5 @@
 # Finite State Machines
-Display and run (deterministic) finite state machines, aka finite automata.
+Display, run, and minimize deterministic finite state machines, aka finite automata.
 
 
 ## Installation
